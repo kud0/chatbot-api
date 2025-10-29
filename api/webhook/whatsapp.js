@@ -104,12 +104,58 @@ export default async function handler(req, res) {
 }
 
 /**
- * Handle text messages - Show welcome menu
+ * Handle text messages - Show welcome menu or collect name
  */
 async function handleTextMessage(text, phone, phoneNumberId) {
   console.log(`📱 Text from ${phone}: ${text}`);
 
-  // Reset conversation state
+  // Check if we're waiting for the customer's name
+  const booking = await kv.get(`booking:${phone}`);
+
+  if (booking && booking.step === 'name_input') {
+    // Save the customer's name
+    booking.customerName = text.trim();
+    booking.step = 'confirmation';
+    await kv.set(`booking:${phone}`, booking, { ex: 3600 });
+
+    // Show confirmation
+    const buttons = [
+      {
+        type: "reply",
+        reply: {
+          id: "confirm",
+          title: "✅ Confirmar"
+        }
+      },
+      {
+        type: "reply",
+        reply: {
+          id: "cancel",
+          title: "❌ Cancelar"
+        }
+      }
+    ];
+
+    const summary = `📋 RESUMEN DE TU CITA
+
+👤 Nombre: ${booking.customerName}
+🔹 Servicio: ${booking.serviceName}
+💈 Barbero: ${booking.barberName || 'Asignado'}
+💰 Precio: €${booking.servicePrice}
+⏱️ Duración: ${booking.serviceDuration}min
+📅 Fecha: ${formatDate(booking.date)}
+🕐 Hora: ${booking.time}
+
+¿Confirmar esta cita?`;
+
+    await sendInteractiveButtons(phoneNumberId, phone, {
+      body: summary,
+      buttons: buttons
+    });
+    return;
+  }
+
+  // Otherwise, reset conversation state and show welcome menu
   await kv.del(`booking:${phone}`);
 
   // Show service selection menu
@@ -343,7 +389,7 @@ async function handleDateSelection(dateStr, phone, phoneNumberId) {
 }
 
 /**
- * Handle time selection - Show confirmation
+ * Handle time selection - Ask for customer name
  */
 async function handleTimeSelection(time, phone, phoneNumberId) {
   const booking = await kv.get(`booking:${phone}`);
@@ -368,44 +414,22 @@ async function handleTimeSelection(time, phone, phoneNumberId) {
     }
   }
 
-  // Update state
-  booking.step = 'confirmation';
+  // Update state to wait for name
+  booking.step = 'name_input';
   booking.time = time;
   await kv.set(`booking:${phone}`, booking, { ex: 3600 });
 
-  // Show confirmation buttons
-  const buttons = [
-    {
-      type: "reply",
-      reply: {
-        id: "confirm",
-        title: "✅ Confirmar"
-      }
-    },
-    {
-      type: "reply",
-      reply: {
-        id: "cancel",
-        title: "❌ Cancelar"
-      }
-    }
-  ];
-
-  const summary = `📋 RESUMEN DE TU CITA
+  // Ask for customer name
+  const message = `✅ Perfecto!
 
 🔹 Servicio: ${booking.serviceName}
 💈 Barbero: ${booking.barberName || 'Asignado'}
-💰 Precio: €${booking.servicePrice}
-⏱️ Duración: ${booking.serviceDuration}min
 📅 Fecha: ${formatDate(booking.date)}
 🕐 Hora: ${booking.time}
 
-¿Confirmar esta cita?`;
+👤 Para confirmar, por favor escribe tu nombre:`;
 
-  await sendInteractiveButtons(phoneNumberId, phone, {
-    body: summary,
-    buttons: buttons
-  });
+  await sendWhatsAppMessage(phoneNumberId, phone, message);
 }
 
 /**
@@ -425,6 +449,7 @@ async function handleConfirmation(phone, phoneNumberId) {
       date: booking.date,
       time: booking.time,
       duration: booking.serviceDuration,
+      customerName: booking.customerName,
       customerPhone: phone,
       barberName: booking.barberName,
       calendarId: booking.barberCalendarId
@@ -433,13 +458,14 @@ async function handleConfirmation(phone, phoneNumberId) {
     // Send confirmation message
     const confirmMessage = `✅ ¡CITA CONFIRMADA!
 
+👤 ${booking.customerName}
 📋 ${booking.serviceName}
 💈 Barbero: ${booking.barberName}
 📅 ${formatDate(booking.date)}
 🕐 ${booking.time}
 🏪 Barbería El Clásico
 
-¡Te esperamos!
+¡Te esperamos, ${booking.customerName}!
 
 _Para cancelar, contacta con al menos 2 horas de antelación._`;
 
@@ -700,7 +726,7 @@ async function getAvailableTimeSlots(dateStr, serviceDuration, calendarIds) {
 /**
  * Create Google Calendar event
  */
-async function createCalendarEvent({ service, date, time, duration, customerPhone, barberName, calendarId }) {
+async function createCalendarEvent({ service, date, time, duration, customerName, customerPhone, barberName, calendarId }) {
   try {
     const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
     const auth = new google.auth.GoogleAuth({
@@ -715,8 +741,8 @@ async function createCalendarEvent({ service, date, time, duration, customerPhon
     const endDateTime = new Date(startDateTime.getTime() + duration * 60000);
 
     const event = {
-      summary: `${service} - ${customerPhone}`,
-      description: `Reserva de ${service}\nBarbero: ${barberName}\nCliente: ${customerPhone}`,
+      summary: `${service} - ${customerName}`,
+      description: `Reserva de ${service}\nBarbero: ${barberName}\nCliente: ${customerName}\nTeléfono: ${customerPhone}`,
       start: {
         dateTime: startDateTime.toISOString(),
         timeZone: 'Europe/Madrid'
@@ -738,7 +764,7 @@ async function createCalendarEvent({ service, date, time, duration, customerPhon
       resource: event
     });
 
-    console.log(`✅ Calendar event created for ${barberName}:`, response.data.id);
+    console.log(`✅ Calendar event created for ${barberName}: ${customerName}`, response.data.id);
     return response.data.htmlLink;
 
   } catch (error) {
