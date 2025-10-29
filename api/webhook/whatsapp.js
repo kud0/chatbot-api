@@ -75,7 +75,7 @@ async function getAIResponse(userMessage, phone) {
         'Authorization': `Bearer ${process.env.XAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'grok-beta',
+        model: 'grok-3',
         messages: [
           {
             role: 'system',
