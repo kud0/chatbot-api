@@ -92,7 +92,7 @@ Tu trabajo:
 Responde de forma breve y directa.`;
 
     const result = await generateText({
-      model: xai('grok-2-1212'),
+      model: xai('grok-4-fast-non-reasoning'),
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userMessage }
