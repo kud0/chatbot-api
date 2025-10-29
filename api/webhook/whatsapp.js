@@ -598,6 +598,9 @@ async function getAvailableTimeSlots(dateStr, serviceDuration, calendarIds) {
     // Get events from all calendars to check
     const allCalendarEvents = {};
     for (const calId of calendarsToCheck) {
+      console.log(`📅 Checking calendar: ${calId.substring(0, 20)}... for ${dateStr}`);
+      console.log(`   Time range: ${timeMin} to ${timeMax}`);
+
       const response = await calendar.events.list({
         calendarId: calId,
         timeMin: timeMin,
@@ -605,7 +608,17 @@ async function getAvailableTimeSlots(dateStr, serviceDuration, calendarIds) {
         singleEvents: true,
         orderBy: 'startTime'
       });
-      allCalendarEvents[calId] = response.data.items || [];
+
+      const events = response.data.items || [];
+      console.log(`   Found ${events.length} existing events`);
+
+      if (events.length > 0) {
+        events.forEach(event => {
+          console.log(`   - Event: ${event.summary} (${event.start.dateTime || event.start.date})`);
+        });
+      }
+
+      allCalendarEvents[calId] = events;
     }
 
     // Check each slot - must have at least one available barber
@@ -614,6 +627,8 @@ async function getAvailableTimeSlots(dateStr, serviceDuration, calendarIds) {
     for (const slot of slots) {
       const slotStart = new Date(dateStr + 'T' + slot + ':00');
       const slotEnd = new Date(slotStart.getTime() + serviceDuration * 60000);
+
+      console.log(`🔍 Checking slot ${slot} (${slotStart.toISOString()} to ${slotEnd.toISOString()})`);
 
       // Find which barbers are available for this slot
       const availableBarbers = [];
@@ -628,24 +643,34 @@ async function getAvailableTimeSlots(dateStr, serviceDuration, calendarIds) {
 
           // Check if slot overlaps with existing event
           if (slotStart < eventEnd && slotEnd > eventStart) {
+            console.log(`   ❌ Conflict found with: ${event.summary}`);
+            console.log(`      Event: ${eventStart.toISOString()} - ${eventEnd.toISOString()}`);
+            console.log(`      Slot:  ${slotStart.toISOString()} - ${slotEnd.toISOString()}`);
             hasConflict = true;
             break;
           }
         }
 
         if (!hasConflict) {
+          console.log(`   ✅ Available on calendar ${calId.substring(0, 20)}...`);
           availableBarbers.push(calId);
         }
       }
 
       // If at least one barber is available, add this slot
       if (availableBarbers.length > 0) {
+        console.log(`   ➡️ Slot ${slot} AVAILABLE (${availableBarbers.length} barbers free)`);
         availableSlots.push({
           time: slot,
           availableBarbers: availableBarbers
         });
+      } else {
+        console.log(`   ➡️ Slot ${slot} UNAVAILABLE (all barbers busy)`);
       }
     }
+
+    console.log(`📊 Final result: ${availableSlots.length} available slots found`);
+
 
     return availableSlots;
 
