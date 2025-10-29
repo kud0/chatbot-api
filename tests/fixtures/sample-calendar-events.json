@@ -1,0 +1,166 @@
+{
+  "existingBooking": {
+    "id": "event_existing_123",
+    "status": "confirmed",
+    "summary": "Haircut - Jane Smith",
+    "description": "Service: Haircut\nCustomer: Jane Smith\nPhone: +1234567890\nDuration: 30 minutes",
+    "start": {
+      "dateTime": "2025-10-30T14:00:00-04:00",
+      "timeZone": "America/New_York"
+    },
+    "end": {
+      "dateTime": "2025-10-30T14:30:00-04:00",
+      "timeZone": "America/New_York"
+    },
+    "attendees": [
+      {
+        "email": "customer@example.com",
+        "displayName": "Jane Smith"
+      }
+    ],
+    "extendedProperties": {
+      "private": {
+        "serviceId": "haircut",
+        "customerPhone": "1234567890",
+        "bookingSource": "whatsapp"
+      }
+    }
+  },
+
+  "busySlots": [
+    {
+      "id": "event_busy_1",
+      "status": "confirmed",
+      "summary": "Beard Trim - Mike Johnson",
+      "start": {
+        "dateTime": "2025-10-30T10:00:00-04:00",
+        "timeZone": "America/New_York"
+      },
+      "end": {
+        "dateTime": "2025-10-30T10:15:00-04:00",
+        "timeZone": "America/New_York"
+      }
+    },
+    {
+      "id": "event_busy_2",
+      "status": "confirmed",
+      "summary": "Haircut + Beard - Tom Wilson",
+      "start": {
+        "dateTime": "2025-10-30T11:00:00-04:00",
+        "timeZone": "America/New_York"
+      },
+      "end": {
+        "dateTime": "2025-10-30T11:45:00-04:00",
+        "timeZone": "America/New_York"
+      }
+    },
+    {
+      "id": "event_busy_3",
+      "status": "confirmed",
+      "summary": "Styling - Sarah Davis",
+      "start": {
+        "dateTime": "2025-10-30T15:00:00-04:00",
+        "timeZone": "America/New_York"
+      },
+      "end": {
+        "dateTime": "2025-10-30T15:20:00-04:00",
+        "timeZone": "America/New_York"
+      }
+    }
+  ],
+
+  "freebusyResponse": {
+    "kind": "calendar#freeBusy",
+    "timeMin": "2025-10-30T09:00:00-04:00",
+    "timeMax": "2025-10-30T18:00:00-04:00",
+    "calendars": {
+      "test@calendar.google.com": {
+        "busy": [
+          {
+            "start": "2025-10-30T10:00:00-04:00",
+            "end": "2025-10-30T10:15:00-04:00"
+          },
+          {
+            "start": "2025-10-30T11:00:00-04:00",
+            "end": "2025-10-30T11:45:00-04:00"
+          },
+          {
+            "start": "2025-10-30T15:00:00-04:00",
+            "end": "2025-10-30T15:20:00-04:00"
+          }
+        ]
+      }
+    }
+  },
+
+  "multiDayBusySlots": [
+    {
+      "id": "event_multi_1",
+      "start": {
+        "dateTime": "2025-10-30T10:00:00-04:00"
+      },
+      "end": {
+        "dateTime": "2025-10-30T10:30:00-04:00"
+      }
+    },
+    {
+      "id": "event_multi_2",
+      "start": {
+        "dateTime": "2025-10-30T14:00:00-04:00"
+      },
+      "end": {
+        "dateTime": "2025-10-30T14:45:00-04:00"
+      }
+    },
+    {
+      "id": "event_multi_3",
+      "start": {
+        "dateTime": "2025-10-31T11:00:00-04:00"
+      },
+      "end": {
+        "dateTime": "2025-10-31T11:30:00-04:00"
+      }
+    },
+    {
+      "id": "event_multi_4",
+      "start": {
+        "dateTime": "2025-10-31T16:00:00-04:00"
+      },
+      "end": {
+        "dateTime": "2025-10-31T16:30:00-04:00"
+      }
+    }
+  ],
+
+  "newBookingRequest": {
+    "summary": "Haircut - John Doe",
+    "description": "Service: Haircut\nCustomer: John Doe\nPhone: +1234567890\nDuration: 30 minutes",
+    "start": {
+      "dateTime": "2025-10-31T14:00:00-04:00",
+      "timeZone": "America/New_York"
+    },
+    "end": {
+      "dateTime": "2025-10-31T14:30:00-04:00",
+      "timeZone": "America/New_York"
+    },
+    "attendees": [
+      {
+        "email": "customer@example.com",
+        "displayName": "John Doe"
+      }
+    ],
+    "extendedProperties": {
+      "private": {
+        "serviceId": "haircut",
+        "customerPhone": "1234567890",
+        "bookingSource": "whatsapp"
+      }
+    },
+    "reminders": {
+      "useDefault": false,
+      "overrides": [
+        { "method": "sms", "minutes": 60 }
+      ]
+    }
+  }
+}

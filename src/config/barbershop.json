@@ -1,0 +1,221 @@
+{
+  "business": {
+    "name": "Barbería El Clásico",
+    "description": {
+      "es": "Barbería tradicional con estilo moderno en el corazón de Madrid",
+      "en": "Traditional barbershop with modern style in the heart of Madrid"
+    },
+    "timezone": "Europe/Madrid",
+    "contact": {
+      "phone": "+34912345678",
+      "address": {
+        "street": "Calle Gran Vía, 45",
+        "city": "Madrid",
+        "postalCode": "28013",
+        "country": "España"
+      },
+      "email": "info@barberiaelclasico.es"
+    }
+  },
+  "services": [
+    {
+      "id": "haircut",
+      "name": {
+        "es": "Corte de pelo",
+        "en": "Haircut"
+      },
+      "description": {
+        "es": "Corte de pelo profesional con acabado a tu estilo",
+        "en": "Professional haircut styled to your preference"
+      },
+      "duration": 30,
+      "price": {
+        "amount": 25,
+        "currency": "EUR"
+      },
+      "category": "hair"
+    },
+    {
+      "id": "beard-trim",
+      "name": {
+        "es": "Arreglo de barba",
+        "en": "Beard trim"
+      },
+      "description": {
+        "es": "Perfilado y arreglo de barba con acabado profesional",
+        "en": "Professional beard shaping and trimming"
+      },
+      "duration": 15,
+      "price": {
+        "amount": 10,
+        "currency": "EUR"
+      },
+      "category": "beard"
+    },
+    {
+      "id": "haircut-beard-combo",
+      "name": {
+        "es": "Corte + Barba",
+        "en": "Haircut + Beard"
+      },
+      "description": {
+        "es": "Servicio completo: corte de pelo y arreglo de barba",
+        "en": "Complete service: haircut and beard trim"
+      },
+      "duration": 45,
+      "price": {
+        "amount": 30,
+        "currency": "EUR"
+      },
+      "originalPrice": {
+        "amount": 35,
+        "currency": "EUR"
+      },
+      "discount": true,
+      "category": "combo"
+    },
+    {
+      "id": "hair-coloring",
+      "name": {
+        "es": "Tinte de pelo",
+        "en": "Hair coloring"
+      },
+      "description": {
+        "es": "Coloración profesional del cabello con productos de calidad",
+        "en": "Professional hair coloring with quality products"
+      },
+      "duration": 60,
+      "price": {
+        "amount": 40,
+        "currency": "EUR"
+      },
+      "category": "hair"
+    },
+    {
+      "id": "kids-haircut",
+      "name": {
+        "es": "Corte infantil",
+        "en": "Kids haircut"
+      },
+      "description": {
+        "es": "Corte de pelo para niños hasta 12 años",
+        "en": "Haircut for children up to 12 years old"
+      },
+      "duration": 20,
+      "price": {
+        "amount": 15,
+        "currency": "EUR"
+      },
+      "category": "hair",
+      "ageRestriction": {
+        "max": 12
+      }
+    },
+    {
+      "id": "hot-towel-shave",
+      "name": {
+        "es": "Afeitado tradicional",
+        "en": "Hot towel shave"
+      },
+      "description": {
+        "es": "Afeitado tradicional con navaja y toalla caliente",
+        "en": "Traditional straight razor shave with hot towel"
+      },
+      "duration": 25,
+      "price": {
+        "amount": 20,
+        "currency": "EUR"
+      },
+      "category": "beard"
+    }
+  ],
+  "businessHours": {
+    "monday": {
+      "open": "09:00",
+      "close": "20:00",
+      "breaks": [
+        {
+          "start": "14:00",
+          "end": "15:00"
+        }
+      ]
+    },
+    "tuesday": {
+      "open": "09:00",
+      "close": "20:00",
+      "breaks": [
+        {
+          "start": "14:00",
+          "end": "15:00"
+        }
+      ]
+    },
+    "wednesday": {
+      "open": "09:00",
+      "close": "20:00",
+      "breaks": [
+        {
+          "start": "14:00",
+          "end": "15:00"
+        }
+      ]
+    },
+    "thursday": {
+      "open": "09:00",
+      "close": "20:00",
+      "breaks": [
+        {
+          "start": "14:00",
+          "end": "15:00"
+        }
+      ]
+    },
+    "friday": {
+      "open": "09:00",
+      "close": "21:00",
+      "breaks": [
+        {
+          "start": "14:00",
+          "end": "15:00"
+        }
+      ]
+    },
+    "saturday": {
+      "open": "10:00",
+      "close": "18:00"
+    },
+    "sunday": {
+      "closed": true
+    }
+  },
+  "languages": {
+    "supported": ["es", "en"],
+    "default": "es"
+  },
+  "booking": {
+    "advanceBookingDays": 30,
+    "minAdvanceHours": 2,
+    "slotDuration": 15,
+    "cancellationPolicy": {
+      "es": "Las citas se pueden cancelar hasta 2 horas antes sin penalización",
+      "en": "Appointments can be canceled up to 2 hours in advance without penalty"
+    }
+  },
+  "staff": [
+    {
+      "id": "barber-1",
+      "name": "Carlos",
+      "specialties": ["haircut", "beard-trim", "haircut-beard-combo"]
+    },
+    {
+      "id": "barber-2",
+      "name": "Miguel",
+      "specialties": ["haircut", "hair-coloring", "kids-haircut"]
+    },
+    {
+      "id": "barber-3",
+      "name": "Antonio",
+      "specialties": ["hot-towel-shave", "beard-trim", "haircut-beard-combo"]
+    }
+  ]
+}

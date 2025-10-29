@@ -1,0 +1,185 @@
+{
+  "newConversation": {
+    "userId": "1234567890",
+    "messages": [],
+    "context": {
+      "intent": null,
+      "language": "en",
+      "state": "initial"
+    },
+    "createdAt": 1730217600000,
+    "lastUpdated": 1730217600000
+  },
+
+  "serviceInquiryConversation": {
+    "userId": "1234567890",
+    "messages": [
+      {
+        "role": "user",
+        "content": "What services do you offer?",
+        "timestamp": 1730217600000
+      },
+      {
+        "role": "assistant",
+        "content": "We offer the following services:\n\n1. Haircut - $25 (30 min)\n2. Beard Trim - $15 (15 min)\n3. Haircut + Beard - $35 (45 min)\n4. Styling - $20 (20 min)\n\nWhich service would you like to book?",
+        "timestamp": 1730217601000
+      }
+    ],
+    "context": {
+      "intent": "service_inquiry",
+      "language": "en",
+      "state": "awaiting_service_selection"
+    },
+    "createdAt": 1730217600000,
+    "lastUpdated": 1730217601000
+  },
+
+  "bookingFlowConversation": {
+    "userId": "1234567890",
+    "messages": [
+      {
+        "role": "user",
+        "content": "I want a haircut",
+        "timestamp": 1730217600000
+      },
+      {
+        "role": "assistant",
+        "content": "Great! I can help you book a haircut ($25, 30 minutes). When would you like to come in?",
+        "timestamp": 1730217601000
+      },
+      {
+        "role": "user",
+        "content": "Tomorrow at 2pm",
+        "timestamp": 1730217620000
+      }
+    ],
+    "context": {
+      "intent": "booking",
+      "language": "en",
+      "state": "awaiting_confirmation",
+      "selectedService": {
+        "id": "haircut",
+        "name": "Haircut",
+        "duration": 30,
+        "price": 25
+      },
+      "requestedDateTime": "2025-10-30T14:00:00-04:00"
+    },
+    "createdAt": 1730217600000,
+    "lastUpdated": 1730217620000
+  },
+
+  "spanishConversation": {
+    "userId": "9876543210",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hola, necesito un corte de cabello",
+        "timestamp": 1730217600000
+      },
+      {
+        "role": "assistant",
+        "content": "¡Hola! Claro, puedo ayudarte a reservar un corte de cabello. ¿Qué día y hora te gustaría venir?",
+        "timestamp": 1730217601000
+      }
+    ],
+    "context": {
+      "intent": "booking",
+      "language": "es",
+      "state": "awaiting_datetime",
+      "selectedService": {
+        "id": "haircut",
+        "name": "Corte de Cabello",
+        "duration": 30,
+        "price": 25
+      }
+    },
+    "createdAt": 1730217600000,
+    "lastUpdated": 1730217601000
+  },
+
+  "completedBookingConversation": {
+    "userId": "1234567890",
+    "messages": [
+      {
+        "role": "user",
+        "content": "I want a haircut",
+        "timestamp": 1730217600000
+      },
+      {
+        "role": "assistant",
+        "content": "Great! I can help you book a haircut ($25, 30 minutes). When would you like to come in?",
+        "timestamp": 1730217601000
+      },
+      {
+        "role": "user",
+        "content": "Tomorrow at 2pm",
+        "timestamp": 1730217620000
+      },
+      {
+        "role": "assistant",
+        "content": "Perfect! I've booked your haircut for tomorrow at 2:00 PM. You'll receive a confirmation shortly.",
+        "timestamp": 1730217621000
+      }
+    ],
+    "context": {
+      "intent": "booking",
+      "language": "en",
+      "state": "completed",
+      "selectedService": {
+        "id": "haircut",
+        "name": "Haircut",
+        "duration": 30,
+        "price": 25
+      },
+      "confirmedDateTime": "2025-10-30T14:00:00-04:00",
+      "bookingId": "event_test123"
+    },
+    "createdAt": 1730217600000,
+    "lastUpdated": 1730217621000
+  },
+
+  "multiTurnConversation": {
+    "userId": "1234567890",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hi",
+        "timestamp": 1730217600000
+      },
+      {
+        "role": "assistant",
+        "content": "Hello! Welcome to our barbershop. How can I help you today?",
+        "timestamp": 1730217601000
+      },
+      {
+        "role": "user",
+        "content": "What are your hours?",
+        "timestamp": 1730217610000
+      },
+      {
+        "role": "assistant",
+        "content": "We're open:\nMon-Fri: 9:00 AM - 6:00 PM\nSaturday: 10:00 AM - 4:00 PM\nClosed on Sundays",
+        "timestamp": 1730217611000
+      },
+      {
+        "role": "user",
+        "content": "Great, I'd like to book a haircut",
+        "timestamp": 1730217620000
+      }
+    ],
+    "context": {
+      "intent": "booking",
+      "language": "en",
+      "state": "awaiting_datetime",
+      "selectedService": {
+        "id": "haircut",
+        "name": "Haircut",
+        "duration": 30,
+        "price": 25
+      }
+    },
+    "createdAt": 1730217600000,
+    "lastUpdated": 1730217620000
+  }
+}

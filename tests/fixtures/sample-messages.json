@@ -1,0 +1,208 @@
+{
+  "greetingMessage": {
+    "object": "whatsapp_business_account",
+    "entry": [{
+      "id": "123456789",
+      "changes": [{
+        "value": {
+          "messaging_product": "whatsapp",
+          "metadata": {
+            "display_phone_number": "15551234567",
+            "phone_number_id": "test_phone_number_id"
+          },
+          "contacts": [{
+            "profile": { "name": "John Doe" },
+            "wa_id": "1234567890"
+          }],
+          "messages": [{
+            "from": "1234567890",
+            "id": "wamid.HBgNMTIzNDU2Nzg5MAVReplyA",
+            "timestamp": "1730217600",
+            "type": "text",
+            "text": { "body": "Hello" }
+          }]
+        },
+        "field": "messages"
+      }]
+    }]
+  },
+
+  "serviceInquiry": {
+    "object": "whatsapp_business_account",
+    "entry": [{
+      "id": "123456789",
+      "changes": [{
+        "value": {
+          "messaging_product": "whatsapp",
+          "metadata": {
+            "display_phone_number": "15551234567",
+            "phone_number_id": "test_phone_number_id"
+          },
+          "contacts": [{
+            "profile": { "name": "John Doe" },
+            "wa_id": "1234567890"
+          }],
+          "messages": [{
+            "from": "1234567890",
+            "id": "wamid.HBgNMTIzNDU2Nzg5MAVReplyB",
+            "timestamp": "1730217700",
+            "type": "text",
+            "text": { "body": "What services do you offer?" }
+          }]
+        },
+        "field": "messages"
+      }]
+    }]
+  },
+
+  "bookingRequest": {
+    "object": "whatsapp_business_account",
+    "entry": [{
+      "id": "123456789",
+      "changes": [{
+        "value": {
+          "messaging_product": "whatsapp",
+          "metadata": {
+            "display_phone_number": "15551234567",
+            "phone_number_id": "test_phone_number_id"
+          },
+          "contacts": [{
+            "profile": { "name": "John Doe" },
+            "wa_id": "1234567890"
+          }],
+          "messages": [{
+            "from": "1234567890",
+            "id": "wamid.HBgNMTIzNDU2Nzg5MAVReplyC",
+            "timestamp": "1730217800",
+            "type": "text",
+            "text": { "body": "I want to book a haircut for tomorrow at 2pm" }
+          }]
+        },
+        "field": "messages"
+      }]
+    }]
+  },
+
+  "availabilityCheck": {
+    "object": "whatsapp_business_account",
+    "entry": [{
+      "id": "123456789",
+      "changes": [{
+        "value": {
+          "messaging_product": "whatsapp",
+          "metadata": {
+            "display_phone_number": "15551234567",
+            "phone_number_id": "test_phone_number_id"
+          },
+          "contacts": [{
+            "profile": { "name": "John Doe" },
+            "wa_id": "1234567890"
+          }],
+          "messages": [{
+            "from": "1234567890",
+            "id": "wamid.HBgNMTIzNDU2Nzg5MAVReplyD",
+            "timestamp": "1730217900",
+            "type": "text",
+            "text": { "body": "What times are available on Friday?" }
+          }]
+        },
+        "field": "messages"
+      }]
+    }]
+  },
+
+  "spanishGreeting": {
+    "object": "whatsapp_business_account",
+    "entry": [{
+      "id": "123456789",
+      "changes": [{
+        "value": {
+          "messaging_product": "whatsapp",
+          "metadata": {
+            "display_phone_number": "15551234567",
+            "phone_number_id": "test_phone_number_id"
+          },
+          "contacts": [{
+            "profile": { "name": "Maria Garcia" },
+            "wa_id": "9876543210"
+          }],
+          "messages": [{
+            "from": "9876543210",
+            "id": "wamid.HBgNMTIzNDU2Nzg5MAVReplyE",
+            "timestamp": "1730218000",
+            "type": "text",
+            "text": { "body": "Hola, necesito un corte de cabello" }
+          }]
+        },
+        "field": "messages"
+      }]
+    }]
+  },
+
+  "imageMessage": {
+    "object": "whatsapp_business_account",
+    "entry": [{
+      "id": "123456789",
+      "changes": [{
+        "value": {
+          "messaging_product": "whatsapp",
+          "metadata": {
+            "display_phone_number": "15551234567",
+            "phone_number_id": "test_phone_number_id"
+          },
+          "contacts": [{
+            "profile": { "name": "John Doe" },
+            "wa_id": "1234567890"
+          }],
+          "messages": [{
+            "from": "1234567890",
+            "id": "wamid.HBgNMTIzNDU2Nzg5MAVReplyF",
+            "timestamp": "1730218100",
+            "type": "image",
+            "image": {
+              "mime_type": "image/jpeg",
+              "sha256": "abc123",
+              "id": "image_id_123"
+            }
+          }]
+        },
+        "field": "messages"
+      }]
+    }]
+  },
+
+  "malformedPayload": {
+    "object": "whatsapp_business_account",
+    "entry": [{
+      "id": "123456789",
+      "changes": [{
+        "value": {
+          "messaging_product": "whatsapp"
+        }
+      }]
+    }]
+  },
+
+  "statusUpdate": {
+    "object": "whatsapp_business_account",
+    "entry": [{
+      "id": "123456789",
+      "changes": [{
+        "value": {
+          "messaging_product": "whatsapp",
+          "metadata": {
+            "display_phone_number": "15551234567",
+            "phone_number_id": "test_phone_number_id"
+          },
+          "statuses": [{
+            "id": "wamid.HBgNMTIzNDU2Nzg5MAVReplyA",
+            "status": "delivered",
+            "timestamp": "1730218200",
+            "recipient_id": "1234567890"
+          }]
+        },
+        "field": "messages"
+      }]
+    }]
+  }
+}
