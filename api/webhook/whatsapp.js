@@ -600,6 +600,8 @@ async function sendInteractiveList(phoneNumberId, to, { header, body, button, se
     }
   };
 
+  console.log('🔄 Sending interactive list to:', to);
+
   const response = await fetch(url, {
     method: 'POST',
     headers: {
@@ -609,7 +611,15 @@ async function sendInteractiveList(phoneNumberId, to, { header, body, button, se
     body: JSON.stringify(message)
   });
 
-  return await response.json();
+  const result = await response.json();
+
+  if (!response.ok) {
+    console.error('❌ WhatsApp API error:', result);
+  } else {
+    console.log('✅ Message sent successfully');
+  }
+
+  return result;
 }
 
 /**
@@ -633,6 +643,8 @@ async function sendInteractiveButtons(phoneNumberId, to, { body, buttons }) {
     }
   };
 
+  console.log('🔄 Sending interactive buttons to:', to);
+
   const response = await fetch(url, {
     method: 'POST',
     headers: {
@@ -642,7 +654,15 @@ async function sendInteractiveButtons(phoneNumberId, to, { body, buttons }) {
     body: JSON.stringify(message)
   });
 
-  return await response.json();
+  const result = await response.json();
+
+  if (!response.ok) {
+    console.error('❌ WhatsApp API error:', result);
+  } else {
+    console.log('✅ Buttons sent successfully');
+  }
+
+  return result;
 }
 
 /**
