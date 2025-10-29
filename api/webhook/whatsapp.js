@@ -66,6 +66,9 @@ export default async function handler(req, res) {
  */
 async function getAIResponse(userMessage, phone) {
   try {
+    console.log('Calling xAI API...');
+    console.log('API Key exists:', !!process.env.XAI_API_KEY);
+
     const systemPrompt = `Eres un asistente virtual de una barbería en Madrid llamada "Barbería El Clásico".
 
 Nuestros servicios:
@@ -101,9 +104,11 @@ Responde de forma breve y directa.`;
       maxTokens: 200
     });
 
-    return result.text;
+    console.log('AI Response:', result.text);
+    return result.text || 'Lo siento, no pude procesar tu mensaje. ¿Puedes intentar de nuevo?';
   } catch (error) {
-    console.error('AI Error:', error);
+    console.error('AI Error details:', error.message);
+    console.error('Full error:', JSON.stringify(error, null, 2));
     return '¡Hola! Soy el asistente de Barbería El Clásico. ¿En qué puedo ayudarte? 💈\n\nEscribe "servicios" para ver nuestra lista de servicios.';
   }
 }
