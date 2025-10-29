@@ -62,54 +62,48 @@ export default async function handler(req, res) {
 }
 
 /**
- * Get AI response using Grok
+ * Get AI response using direct xAI API
  */
 async function getAIResponse(userMessage, phone) {
   try {
-    console.log('Calling xAI API...');
-    console.log('API Key exists:', !!process.env.XAI_API_KEY);
+    console.log('Calling xAI API directly...');
 
-    const systemPrompt = `Eres un asistente virtual de una barbería en Madrid llamada "Barbería El Clásico".
-
-Nuestros servicios:
-- Corte de pelo: €25 (30 min)
-- Recorte de barba: €10 (15 min)
-- Corte + Barba: €30 (45 min, descuento de €5)
-- Tinte de pelo: €40 (60 min)
-- Corte niño: €15 (20 min)
-- Afeitado con toalla caliente: €20 (25 min)
-
-Horario:
-- Lunes a Viernes: 9:00 - 19:00
-- Sábado: 10:00 - 14:00
-- Domingo: Cerrado
-
-Dirección: Calle Gran Vía, 45, Madrid
-
-Tu trabajo:
-1. Responde en español de forma amigable y profesional
-2. Informa sobre servicios y precios
-3. Ayuda a reservar citas
-4. Usa emojis ocasionalmente (💈, ✂️, 👍)
-
-Responde de forma breve y directa.`;
-
-    const result = await generateText({
-      model: xai('grok-4-fast-non-reasoning'),
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userMessage }
-      ],
-      temperature: 0.7,
-      maxTokens: 200
+    const response = await fetch('https://api.x.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.XAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'grok-beta',
+        messages: [
+          {
+            role: 'system',
+            content: 'Eres un asistente de barbería en Madrid. Servicios: Corte €25, Barba €10, Corte+Barba €30. Horario: Lu-Vi 9-19h, Sá 10-14h. Responde en español, breve.'
+          },
+          {
+            role: 'user',
+            content: userMessage
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 150
+      })
     });
 
-    console.log('AI Response:', result.text);
-    return result.text || 'Lo siento, no pude procesar tu mensaje. ¿Puedes intentar de nuevo?';
+    const data = await response.json();
+    console.log('xAI Response:', JSON.stringify(data));
+
+    if (data.choices && data.choices[0] && data.choices[0].message) {
+      const aiText = data.choices[0].message.content;
+      console.log('AI Text:', aiText);
+      return aiText || '¡Hola! ¿En qué puedo ayudarte? 💈';
+    }
+
+    return '¡Hola! Soy de Barbería El Clásico. ¿En qué puedo ayudarte? 💈';
   } catch (error) {
-    console.error('AI Error details:', error.message);
-    console.error('Full error:', JSON.stringify(error, null, 2));
-    return '¡Hola! Soy el asistente de Barbería El Clásico. ¿En qué puedo ayudarte? 💈\n\nEscribe "servicios" para ver nuestra lista de servicios.';
+    console.error('AI Error:', error.message);
+    return '¡Hola! Soy de Barbería El Clásico. Servicios: Corte €25, Barba €10. ¿Qué necesitas? 💈';
   }
 }
 
