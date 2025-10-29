@@ -44,3 +44,5 @@ temp/
 # Google Service Account Keys (sensitive)
 *service-account*.json
 credentials.json
+.vercel
+.env*.local
