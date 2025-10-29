@@ -11,6 +11,28 @@ const BARBERSHOP_CONFIG = {
     "name": "Barbería El Clásico",
     "timezone": "Europe/Madrid"
   },
+  "barbers": [
+    {
+      "id": "barber1",
+      "name": "Carlos",
+      "calendarId": "cdd5f96146b8e1f57f2d4b72f1faaa2d384e2b1417b67fdaa8a690fd8fd500c3@group.calendar.google.com"
+    },
+    {
+      "id": "barber2",
+      "name": "Miguel",
+      "calendarId": "66a6d00167f13d054b4e6f5e60fd0458fb5fec94ab42004f2e54ea2f69f002cc@group.calendar.google.com"
+    },
+    {
+      "id": "barber3",
+      "name": "Javier",
+      "calendarId": "5f69bd20911adafe27dbf7bed633e298dc3e107daa2708d3a6d1d5aa64034101@group.calendar.google.com"
+    },
+    {
+      "id": "barber4",
+      "name": "Antonio",
+      "calendarId": "2671a81156f866930bbe9a64358a72286ec8587cffb81cf6caea2bd7670b04d3@group.calendar.google.com"
+    }
+  ],
   "services": [
     {"id": "haircut", "name": "Corte de pelo", "duration": 30, "price": 25},
     {"id": "beard-trim", "name": "Arreglo de barba", "duration": 15, "price": 10},
@@ -109,6 +131,11 @@ async function handleInteractiveMessage(message, phone, phoneNumberId) {
       const serviceId = selectedId.replace('service:', '');
       await handleServiceSelection(serviceId, phone, phoneNumberId);
     }
+    // Check if it's a barber selection
+    else if (selectedId.startsWith('barber:')) {
+      const barberId = selectedId.replace('barber:', '');
+      await handleBarberSelection(barberId, phone, phoneNumberId);
+    }
     // Check if it's a date selection
     else if (selectedId.startsWith('date:')) {
       const date = selectedId.replace('date:', '');
@@ -159,7 +186,7 @@ async function sendServiceMenu(phoneNumberId, phone) {
 }
 
 /**
- * Handle service selection - Show date menu
+ * Handle service selection - Show barber menu
  */
 async function handleServiceSelection(serviceId, phone, phoneNumberId) {
   const service = BARBERSHOP_CONFIG.services.find(s => s.id === serviceId);
@@ -167,12 +194,61 @@ async function handleServiceSelection(serviceId, phone, phoneNumberId) {
 
   // Save service to state
   await kv.set(`booking:${phone}`, {
-    step: 'date_selection',
+    step: 'barber_selection',
     serviceId: serviceId,
     serviceName: service.name,
     serviceDuration: service.duration,
     servicePrice: service.price
   }, { ex: 3600 }); // 1 hour expiry
+
+  // Create barber selection rows
+  const rows = [
+    {
+      id: 'barber:any',
+      title: 'Sin preferencia',
+      description: 'Cualquier barbero disponible'
+    },
+    ...BARBERSHOP_CONFIG.barbers.map(barber => ({
+      id: `barber:${barber.id}`,
+      title: barber.name,
+      description: 'Barbero'
+    }))
+  ];
+
+  await sendInteractiveList(phoneNumberId, phone, {
+    header: `✅ ${service.name}`,
+    body: `€${service.price} - ${service.duration} minutos\n\n¿Tienes preferencia de barbero?`,
+    button: "Seleccionar barbero",
+    sections: [{
+      title: "Barberos disponibles",
+      rows: rows
+    }]
+  });
+}
+
+/**
+ * Handle barber selection - Show date menu
+ */
+async function handleBarberSelection(barberId, phone, phoneNumberId) {
+  const booking = await kv.get(`booking:${phone}`);
+  if (!booking) {
+    await sendServiceMenu(phoneNumberId, phone);
+    return;
+  }
+
+  // Save barber to state
+  booking.step = 'date_selection';
+  booking.barberId = barberId;
+
+  if (barberId !== 'any') {
+    const barber = BARBERSHOP_CONFIG.barbers.find(b => b.id === barberId);
+    if (barber) {
+      booking.barberName = barber.name;
+      booking.barberCalendarId = barber.calendarId;
+    }
+  }
+
+  await kv.set(`booking:${phone}`, booking, { ex: 3600 });
 
   // Generate next 7 days
   const dates = generateNextDays(7);
@@ -182,9 +258,11 @@ async function handleServiceSelection(serviceId, phone, phoneNumberId) {
     description: d.dayName
   }));
 
+  const barberText = barberId === 'any' ? 'Cualquier barbero' : booking.barberName;
+
   await sendInteractiveList(phoneNumberId, phone, {
-    header: `✅ ${service.name}`,
-    body: `€${service.price} - ${service.duration} minutos\n\n¿Qué día prefieres?`,
+    header: `✅ ${booking.serviceName}`,
+    body: `💈 Barbero: ${barberText}\n€${booking.servicePrice} - ${booking.serviceDuration} minutos\n\n¿Qué día prefieres?`,
     button: "Seleccionar fecha",
     sections: [{
       title: "Próximos 7 días",
@@ -203,8 +281,18 @@ async function handleDateSelection(dateStr, phone, phoneNumberId) {
     return;
   }
 
+  // Determine which calendar(s) to check
+  let calendarsToCheck;
+  if (booking.barberId === 'any') {
+    // Check all barber calendars
+    calendarsToCheck = BARBERSHOP_CONFIG.barbers.map(b => b.calendarId);
+  } else {
+    // Check only the selected barber's calendar
+    calendarsToCheck = booking.barberCalendarId;
+  }
+
   // Get available time slots from Google Calendar
-  const availableSlots = await getAvailableTimeSlots(dateStr, booking.serviceDuration);
+  const availableSlots = await getAvailableTimeSlots(dateStr, booking.serviceDuration, calendarsToCheck);
 
   if (availableSlots.length === 0) {
     await sendWhatsAppMessage(phoneNumberId, phone,
@@ -219,9 +307,11 @@ async function handleDateSelection(dateStr, phone, phoneNumberId) {
       description: d.dayName
     }));
 
+    const barberText = booking.barberId === 'any' ? 'Cualquier barbero' : booking.barberName;
+
     await sendInteractiveList(phoneNumberId, phone, {
       header: `${booking.serviceName}`,
-      body: "Selecciona otra fecha:",
+      body: `💈 Barbero: ${barberText}\n\nSelecciona otra fecha:`,
       button: "Ver fechas",
       sections: [{
         title: "Próximos 7 días",
@@ -234,14 +324,15 @@ async function handleDateSelection(dateStr, phone, phoneNumberId) {
   // Update state
   booking.step = 'time_selection';
   booking.date = dateStr;
+  booking.availableSlots = availableSlots; // Store slots with barber info
   await kv.set(`booking:${phone}`, booking, { ex: 3600 });
 
   // Show time slots as buttons (max 3 buttons, so show first 3 slots)
-  const buttons = availableSlots.slice(0, 3).map(slot => ({
+  const buttons = availableSlots.slice(0, 3).map(slotInfo => ({
     type: "reply",
     reply: {
-      id: `time:${slot}`,
-      title: slot
+      id: `time:${slotInfo.time}`,
+      title: slotInfo.time
     }
   }));
 
@@ -259,6 +350,22 @@ async function handleTimeSelection(time, phone, phoneNumberId) {
   if (!booking) {
     await sendServiceMenu(phoneNumberId, phone);
     return;
+  }
+
+  // Find the slot info for this time
+  const slotInfo = booking.availableSlots?.find(s => s.time === time);
+
+  // If "any" barber was selected, assign one now
+  if (booking.barberId === 'any' && slotInfo && slotInfo.availableBarbers.length > 0) {
+    // Pick the first available barber for this time slot
+    const assignedCalendarId = slotInfo.availableBarbers[0];
+    const assignedBarber = BARBERSHOP_CONFIG.barbers.find(b => b.calendarId === assignedCalendarId);
+
+    if (assignedBarber) {
+      booking.barberId = assignedBarber.id;
+      booking.barberName = assignedBarber.name;
+      booking.barberCalendarId = assignedBarber.calendarId;
+    }
   }
 
   // Update state
@@ -287,6 +394,7 @@ async function handleTimeSelection(time, phone, phoneNumberId) {
   const summary = `📋 RESUMEN DE TU CITA
 
 🔹 Servicio: ${booking.serviceName}
+💈 Barbero: ${booking.barberName || 'Asignado'}
 💰 Precio: €${booking.servicePrice}
 ⏱️ Duración: ${booking.serviceDuration}min
 📅 Fecha: ${formatDate(booking.date)}
@@ -311,22 +419,25 @@ async function handleConfirmation(phone, phoneNumberId) {
   }
 
   try {
-    // Create Google Calendar event
+    // Create Google Calendar event on the assigned barber's calendar
     const eventUrl = await createCalendarEvent({
       service: booking.serviceName,
       date: booking.date,
       time: booking.time,
       duration: booking.serviceDuration,
-      customerPhone: phone
+      customerPhone: phone,
+      barberName: booking.barberName,
+      calendarId: booking.barberCalendarId
     });
 
     // Send confirmation message
     const confirmMessage = `✅ ¡CITA CONFIRMADA!
 
 📋 ${booking.serviceName}
+💈 Barbero: ${booking.barberName}
 📅 ${formatDate(booking.date)}
 🕐 ${booking.time}
-💈 Barbería El Clásico
+🏪 Barbería El Clásico
 
 ¡Te esperamos!
 
@@ -408,9 +519,13 @@ function formatDate(dateStr) {
 }
 
 /**
- * Get available time slots from Google Calendar
+ * Get available time slots from Google Calendar(s)
+ * @param {string} dateStr - Date in YYYY-MM-DD format
+ * @param {number} serviceDuration - Duration in minutes
+ * @param {string|string[]} calendarIds - Single calendar ID or array of calendar IDs
+ * @returns {Promise<Array>} Available time slots with barber assignments
  */
-async function getAvailableTimeSlots(dateStr, serviceDuration) {
+async function getAvailableTimeSlots(dateStr, serviceDuration, calendarIds) {
   try {
     // Initialize Google Calendar
     const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
@@ -420,7 +535,9 @@ async function getAvailableTimeSlots(dateStr, serviceDuration) {
     });
 
     const calendar = google.calendar({ version: 'v3', auth });
-    const calendarId = process.env.CALENDAR_ID;
+
+    // Convert to array if single calendar ID
+    const calendarsToCheck = Array.isArray(calendarIds) ? calendarIds : [calendarIds];
 
     // Get day of week
     const date = new Date(dateStr + 'T00:00:00');
@@ -475,42 +592,58 @@ async function getAvailableTimeSlots(dateStr, serviceDuration) {
       }
     }
 
-    // Check each slot against Google Calendar for conflicts
-    const availableSlots = [];
     const timeMin = new Date(dateStr + 'T00:00:00Z').toISOString();
     const timeMax = new Date(dateStr + 'T23:59:59Z').toISOString();
 
-    // Get existing events for the day
-    const response = await calendar.events.list({
-      calendarId: calendarId,
-      timeMin: timeMin,
-      timeMax: timeMax,
-      singleEvents: true,
-      orderBy: 'startTime'
-    });
+    // Get events from all calendars to check
+    const allCalendarEvents = {};
+    for (const calId of calendarsToCheck) {
+      const response = await calendar.events.list({
+        calendarId: calId,
+        timeMin: timeMin,
+        timeMax: timeMax,
+        singleEvents: true,
+        orderBy: 'startTime'
+      });
+      allCalendarEvents[calId] = response.data.items || [];
+    }
 
-    const existingEvents = response.data.items || [];
+    // Check each slot - must have at least one available barber
+    const availableSlots = [];
 
-    // Check each slot
     for (const slot of slots) {
-      const [slotHour, slotMinute] = slot.split(':').map(Number);
       const slotStart = new Date(dateStr + 'T' + slot + ':00');
       const slotEnd = new Date(slotStart.getTime() + serviceDuration * 60000);
 
-      let hasConflict = false;
-      for (const event of existingEvents) {
-        const eventStart = new Date(event.start.dateTime || event.start.date);
-        const eventEnd = new Date(event.end.dateTime || event.end.date);
+      // Find which barbers are available for this slot
+      const availableBarbers = [];
 
-        // Check if slot overlaps with existing event
-        if (slotStart < eventEnd && slotEnd > eventStart) {
-          hasConflict = true;
-          break;
+      for (const calId of calendarsToCheck) {
+        const events = allCalendarEvents[calId];
+        let hasConflict = false;
+
+        for (const event of events) {
+          const eventStart = new Date(event.start.dateTime || event.start.date);
+          const eventEnd = new Date(event.end.dateTime || event.end.date);
+
+          // Check if slot overlaps with existing event
+          if (slotStart < eventEnd && slotEnd > eventStart) {
+            hasConflict = true;
+            break;
+          }
+        }
+
+        if (!hasConflict) {
+          availableBarbers.push(calId);
         }
       }
 
-      if (!hasConflict) {
-        availableSlots.push(slot);
+      // If at least one barber is available, add this slot
+      if (availableBarbers.length > 0) {
+        availableSlots.push({
+          time: slot,
+          availableBarbers: availableBarbers
+        });
       }
     }
 
@@ -518,15 +651,15 @@ async function getAvailableTimeSlots(dateStr, serviceDuration) {
 
   } catch (error) {
     console.error('Error checking calendar:', error);
-    // Return default slots if calendar check fails
-    return ['09:00', '10:00', '11:00', '12:00', '16:00', '17:00', '18:00'];
+    // Return empty array to show error message to user
+    return [];
   }
 }
 
 /**
  * Create Google Calendar event
  */
-async function createCalendarEvent({ service, date, time, duration, customerPhone }) {
+async function createCalendarEvent({ service, date, time, duration, customerPhone, barberName, calendarId }) {
   try {
     const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
     const auth = new google.auth.GoogleAuth({
@@ -535,7 +668,6 @@ async function createCalendarEvent({ service, date, time, duration, customerPhon
     });
 
     const calendar = google.calendar({ version: 'v3', auth });
-    const calendarId = process.env.CALENDAR_ID;
 
     // Create start and end times
     const startDateTime = new Date(date + 'T' + time + ':00');
@@ -543,7 +675,7 @@ async function createCalendarEvent({ service, date, time, duration, customerPhon
 
     const event = {
       summary: `${service} - ${customerPhone}`,
-      description: `Reserva de ${service}\nCliente: ${customerPhone}`,
+      description: `Reserva de ${service}\nBarbero: ${barberName}\nCliente: ${customerPhone}`,
       start: {
         dateTime: startDateTime.toISOString(),
         timeZone: 'Europe/Madrid'
@@ -565,7 +697,7 @@ async function createCalendarEvent({ service, date, time, duration, customerPhon
       resource: event
     });
 
-    console.log('✅ Calendar event created:', response.data.id);
+    console.log(`✅ Calendar event created for ${barberName}:`, response.data.id);
     return response.data.htmlLink;
 
   } catch (error) {
