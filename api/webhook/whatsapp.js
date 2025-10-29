@@ -592,8 +592,23 @@ async function getAvailableTimeSlots(dateStr, serviceDuration, calendarIds) {
       }
     }
 
-    const timeMin = new Date(dateStr + 'T00:00:00Z').toISOString();
-    const timeMax = new Date(dateStr + 'T23:59:59Z').toISOString();
+    // Get the timezone offset for the date (Europe/Madrid)
+    // Create a date in Madrid timezone and get its offset
+    const testDate = new Date(dateStr + 'T12:00:00');
+    const madridTimeStr = testDate.toLocaleString('en-US', { timeZone: 'Europe/Madrid' });
+    const madridDate = new Date(madridTimeStr);
+    const utcDate = new Date(testDate.toISOString());
+    const offsetMinutes = (utcDate - madridDate) / 60000;
+    const offsetHours = Math.floor(Math.abs(offsetMinutes) / 60);
+    const offsetMins = Math.abs(offsetMinutes) % 60;
+    const offsetSign = offsetMinutes <= 0 ? '+' : '-';
+    const timezoneOffset = `${offsetSign}${String(offsetHours).padStart(2, '0')}:${String(offsetMins).padStart(2, '0')}`;
+
+    console.log(`🌍 Using timezone offset: ${timezoneOffset} for ${dateStr}`);
+
+    // Use Madrid timezone for time range
+    const timeMin = `${dateStr}T00:00:00${timezoneOffset}`;
+    const timeMax = `${dateStr}T23:59:59${timezoneOffset}`;
 
     // Get events from all calendars to check
     const allCalendarEvents = {};
@@ -625,10 +640,11 @@ async function getAvailableTimeSlots(dateStr, serviceDuration, calendarIds) {
     const availableSlots = [];
 
     for (const slot of slots) {
-      const slotStart = new Date(dateStr + 'T' + slot + ':00');
+      // Create slot times in Madrid timezone
+      const slotStart = new Date(`${dateStr}T${slot}:00${timezoneOffset}`);
       const slotEnd = new Date(slotStart.getTime() + serviceDuration * 60000);
 
-      console.log(`🔍 Checking slot ${slot} (${slotStart.toISOString()} to ${slotEnd.toISOString()})`);
+      console.log(`🔍 Checking slot ${slot} Madrid time (${slotStart.toISOString()} to ${slotEnd.toISOString()})`);
 
       // Find which barbers are available for this slot
       const availableBarbers = [];
