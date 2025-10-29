@@ -736,9 +736,22 @@ async function createCalendarEvent({ service, date, time, duration, customerName
 
     const calendar = google.calendar({ version: 'v3', auth });
 
-    // Create start and end times
-    const startDateTime = new Date(date + 'T' + time + ':00');
+    // Calculate Madrid timezone offset for the date
+    const testDate = new Date(date + 'T12:00:00');
+    const madridTimeStr = testDate.toLocaleString('en-US', { timeZone: 'Europe/Madrid' });
+    const madridDate = new Date(madridTimeStr);
+    const utcDate = new Date(testDate.toISOString());
+    const offsetMinutes = (utcDate - madridDate) / 60000;
+    const offsetHours = Math.floor(Math.abs(offsetMinutes) / 60);
+    const offsetMins = Math.abs(offsetMinutes) % 60;
+    const offsetSign = offsetMinutes <= 0 ? '+' : '-';
+    const timezoneOffset = `${offsetSign}${String(offsetHours).padStart(2, '0')}:${String(offsetMins).padStart(2, '0')}`;
+
+    // Create start and end times in Madrid timezone
+    const startDateTime = new Date(`${date}T${time}:00${timezoneOffset}`);
     const endDateTime = new Date(startDateTime.getTime() + duration * 60000);
+
+    console.log(`📅 Creating event: ${startDateTime.toISOString()} to ${endDateTime.toISOString()}`);
 
     const event = {
       summary: `${service} - ${customerName}`,
